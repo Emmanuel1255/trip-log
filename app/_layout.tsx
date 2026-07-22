@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { LogFuelSheet } from "@/components/fuel/LogFuelSheet";
 import { LogTripSheet } from "@/components/trips/LogTripSheet";
@@ -29,19 +30,21 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <SessionProvider>
-            <AppLockProvider>
-              <BottomSheetModalProvider>
-                <Stack screenOptions={{ headerShown: false }} />
-                <LogTripSheet />
-                <LogFuelSheet />
-              </BottomSheetModalProvider>
-            </AppLockProvider>
-          </SessionProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <SessionProvider>
+              <AppLockProvider>
+                <BottomSheetModalProvider>
+                  <Stack screenOptions={{ headerShown: false }} />
+                  <LogTripSheet />
+                  <LogFuelSheet />
+                </BottomSheetModalProvider>
+              </AppLockProvider>
+            </SessionProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

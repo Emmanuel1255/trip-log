@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { VehicleForm, type VehicleFormValues } from "@/components/vehicles/VehicleForm";
 import { StepProgress } from "@/components/onboarding/StepProgress";
 import { useSession } from "@/lib/auth/SessionProvider";
@@ -31,7 +32,13 @@ export default function AddFirstVehicleScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAwareScrollView
+      style={[styles.flex, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bottomOffset={40}
+    >
       <StepProgress step={5} totalSteps={8} />
       <View style={[styles.iconWrap, { backgroundColor: colors.lightAccent, borderRadius: 999 }]}>
         <Feather name="truck" size={32} color={colors.deepAccent} />
@@ -47,15 +54,19 @@ export default function AddFirstVehicleScreen() {
       <Pressable onPress={() => router.push("/(onboarding)/add-first-driver")} style={styles.skip}>
         <Text style={[typography.body, { color: colors.primary }]}>Skip for now</Text>
       </Pressable>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
+  },
+  container: {
+    flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   iconWrap: {
     alignSelf: "center",

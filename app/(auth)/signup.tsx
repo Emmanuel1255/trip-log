@@ -1,16 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { signUp } from "@/lib/auth/session";
@@ -82,66 +74,63 @@ export default function SignupScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={[styles.flex, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bottomOffset={40}
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Image
-            source={require("@/assets/images/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 16 }]}>
-            Create Account
-          </Text>
-          <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
-            Set up your TripLog operator account
-          </Text>
-        </View>
-
-        <TextField label="Full Name" placeholder="Jane Operator" value={fullName} onChangeText={setFullName} />
-        <TextField
-          label="Email"
-          placeholder="you@example.com"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
+      <View style={styles.header}>
+        <Image
+          source={require("@/assets/images/icon.png")}
+          style={styles.logo}
+          resizeMode="contain"
         />
-        <TextField
-          label="Password"
-          placeholder="At least 6 characters"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TextField
-          label="Confirm Password"
-          placeholder="Re-enter your password"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+        <Text style={[typography.title, { color: colors.textPrimary, marginTop: 16 }]}>
+          Create Account
+        </Text>
+        <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
+          Set up your TripLog operator account
+        </Text>
+      </View>
 
-        {error ? (
-          <Text style={[typography.caption, { color: colors.alert, marginBottom: 12 }]}>{error}</Text>
-        ) : null}
+      <TextField label="Full Name" placeholder="Jane Operator" value={fullName} onChangeText={setFullName} />
+      <TextField
+        label="Email"
+        placeholder="you@example.com"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextField
+        label="Password"
+        placeholder="At least 6 characters"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TextField
+        label="Confirm Password"
+        placeholder="Re-enter your password"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
 
-        <Button label="Sign Up" onPress={handleSignup} loading={loading} disabled={!canSubmit} />
+      {error ? (
+        <Text style={[typography.caption, { color: colors.alert, marginBottom: 12 }]}>{error}</Text>
+      ) : null}
 
-        <Pressable onPress={() => router.back()} style={styles.loginLink}>
-          <Text style={[typography.body, { color: colors.textSecondary }]}>
-            Already have an account? <Text style={{ color: colors.primary, fontWeight: "600" }}>Log In</Text>
-          </Text>
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Button label="Sign Up" onPress={handleSignup} loading={loading} disabled={!canSubmit} />
+
+      <Pressable onPress={() => router.back()} style={styles.loginLink}>
+        <Text style={[typography.body, { color: colors.textSecondary }]}>
+          Already have an account? <Text style={{ color: colors.primary, fontWeight: "600" }}>Log In</Text>
+        </Text>
+      </Pressable>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -151,7 +140,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    justifyContent: "center",
     paddingHorizontal: 24,
     paddingVertical: 40,
   },

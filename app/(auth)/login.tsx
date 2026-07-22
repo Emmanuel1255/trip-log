@@ -1,15 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import { signIn } from "@/lib/auth/session";
@@ -36,60 +28,57 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={[styles.flex, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bottomOffset={40}
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Image
-            source={require("@/assets/images/icon.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={[typography.title, { color: colors.textPrimary, marginTop: 16 }]}>
-            Welcome Back
-          </Text>
-          <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
-            Sign in to continue to your account
-          </Text>
-        </View>
-
-        <TextField
-          label="Email"
-          placeholder="you@example.com"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
+      <View style={styles.header}>
+        <Image
+          source={require("@/assets/images/icon.png")}
+          style={styles.logo}
+          resizeMode="contain"
         />
-        <TextField
-          label="Password"
-          placeholder="Enter your password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <Text style={[typography.title, { color: colors.textPrimary, marginTop: 16 }]}>
+          Welcome Back
+        </Text>
+        <Text style={[typography.body, { color: colors.textSecondary, marginTop: 4 }]}>
+          Sign in to continue to your account
+        </Text>
+      </View>
 
-        {error ? (
-          <Text style={[typography.caption, { color: colors.alert, marginBottom: 12 }]}>
-            {error}
-          </Text>
-        ) : null}
+      <TextField
+        label="Email"
+        placeholder="you@example.com"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextField
+        label="Password"
+        placeholder="Enter your password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
 
-        <Button label="Login" onPress={handleLogin} loading={loading} disabled={!email || !password} />
+      {error ? (
+        <Text style={[typography.caption, { color: colors.alert, marginBottom: 12 }]}>
+          {error}
+        </Text>
+      ) : null}
 
-        <Pressable onPress={() => router.push("/(auth)/signup")} style={styles.signupLink}>
-          <Text style={[typography.body, { color: colors.textSecondary }]}>
-            Don&rsquo;t have an account? <Text style={{ color: colors.primary, fontWeight: "600" }}>Sign Up</Text>
-          </Text>
-        </Pressable>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Button label="Login" onPress={handleLogin} loading={loading} disabled={!email || !password} />
+
+      <Pressable onPress={() => router.push("/(auth)/signup")} style={styles.signupLink}>
+        <Text style={[typography.body, { color: colors.textSecondary }]}>
+          Don&rsquo;t have an account? <Text style={{ color: colors.primary, fontWeight: "600" }}>Sign Up</Text>
+        </Text>
+      </Pressable>
+    </KeyboardAwareScrollView>
   );
 }
 

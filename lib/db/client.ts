@@ -1,13 +1,18 @@
 import * as SQLite from "expo-sqlite";
 import { CREATE_TABLES_SQL, MIGRATE_V1_TO_V2_SQL, SCHEMA_VERSION } from "./schema";
 
-let dbInstance: SQLite.SQLiteDatabase | null = null;
+// Stored on globalThis (not plain module scope) so the native connection survives
+// Fast Refresh reloading this module — otherwise a stale in-flight query can hit a
+// released connection and throw "Cannot use shared object that was already released".
+declare global {
+  var __triplogDb: SQLite.SQLiteDatabase | undefined;
+}
 
 export function getDb(): SQLite.SQLiteDatabase {
-  if (!dbInstance) {
-    dbInstance = SQLite.openDatabaseSync("triplog.db");
+  if (!globalThis.__triplogDb) {
+    globalThis.__triplogDb = SQLite.openDatabaseSync("triplog.db");
   }
-  return dbInstance;
+  return globalThis.__triplogDb;
 }
 
 export async function initDb(): Promise<void> {

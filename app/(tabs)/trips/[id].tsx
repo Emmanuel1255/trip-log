@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DateTimeField } from "@/components/ui/DateTimeField";
@@ -74,7 +75,13 @@ export default function TripDetailScreen() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.container}>
+    <KeyboardAwareScrollView
+      style={[styles.flex, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bottomOffset={40}
+    >
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
           <Feather name="chevron-left" size={24} color={colors.textPrimary} />
@@ -188,7 +195,7 @@ export default function TripDetailScreen() {
       </Card>
 
       <EndTripSection trip={trip} onEnded={setTrip} />
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -324,6 +331,9 @@ function DetailRow({
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     padding: 20,
     paddingTop: 60,

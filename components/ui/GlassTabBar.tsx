@@ -1,5 +1,5 @@
 import { BlurView } from "expo-blur";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
@@ -7,33 +7,33 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { useLogTripSheet } from "@/hooks/useLogTripSheet";
 
-const TAB_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
-  index: "home",
-  trips: "clipboard",
-  "vehicles-drivers": "truck",
-  export: "share",
+type TabMeta = {
+  label: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  iconActive: keyof typeof MaterialCommunityIcons.glyphMap;
 };
 
-const TAB_LABELS: Record<string, string> = {
-  index: "Home",
-  trips: "Trips",
-  "vehicles-drivers": "Vehicles & Drivers",
-  export: "Export",
+const TAB_META: Record<string, TabMeta> = {
+  index: { label: "Home", icon: "home-outline", iconActive: "home" },
+  trips: { label: "Trips", icon: "clipboard-text-outline", iconActive: "clipboard-text" },
+  "vehicles-drivers": { label: "Vehicles & Drivers", icon: "truck-outline", iconActive: "truck" },
+  "export/index": { label: "Report", icon: "chart-bar", iconActive: "chart-bar" },
 };
 
-export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+const FALLBACK_TAB_META: TabMeta = {
+  label: "",
+  icon: "help-circle-outline",
+  iconActive: "help-circle",
+};
+
+export function GlassTabBar({ state, navigation }: BottomTabBarProps) {
   const { mode, colors, radii } = useTheme();
   const insets = useSafeAreaInsets();
   const logTripSheet = useLogTripSheet();
 
-  const leftRoutes = state.routes.slice(0, 2);
-  const rightRoutes = state.routes.slice(2);
-
-  const renderTab = (route: (typeof state.routes)[number]) => {
-    const index = state.routes.findIndex((r) => r.key === route.key);
+  const renderTab = (route: (typeof state.routes)[number], index: number) => {
+    const meta = TAB_META[route.name] ?? FALLBACK_TAB_META;
     const isFocused = state.index === index;
-    const iconName = TAB_ICONS[route.name] ?? "circle";
-    const label = TAB_LABELS[route.name] ?? route.name;
 
     const onPress = () => {
       const event = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
@@ -43,16 +43,24 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
     };
 
     return (
-      <Pressable key={route.key} onPress={onPress} style={styles.tab}>
-        <Feather name={iconName} size={20} color={isFocused ? colors.primary : colors.textSecondary} />
+      <Pressable
+        key={route.key}
+        accessibilityRole="button"
+        accessibilityState={{ selected: isFocused }}
+        accessibilityLabel={meta.label}
+        onPress={onPress}
+        style={styles.tab}
+      >
+        <MaterialCommunityIcons
+          name={isFocused ? meta.iconActive : meta.icon}
+          size={24}
+          color={isFocused ? colors.primary : colors.textSecondary}
+        />
         <Text
           numberOfLines={1}
-          style={[
-            styles.tabLabel,
-            { color: isFocused ? colors.primary : colors.textSecondary },
-          ]}
+          style={[styles.tabLabel, { color: isFocused ? colors.primary : colors.textSecondary }]}
         >
-          {label}
+          {meta.label}
         </Text>
       </Pressable>
     );
@@ -78,12 +86,12 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
           // Android: skip real blur for performance, use a near-opaque solid instead.
           <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceOpaque }]} />
         )}
-        <View style={styles.tabRow}>{leftRoutes.map(renderTab)}</View>
-        <View style={styles.centerSpacer} />
-        <View style={styles.tabRow}>{rightRoutes.map(renderTab)}</View>
+        {state.routes.slice(0, 2).map((route, i) => renderTab(route, i))}
+        <View style={styles.tab} />
+        {state.routes.slice(2).map((route, i) => renderTab(route, i + 2))}
       </View>
       <Pressable onPress={handleLogTripPress} style={[styles.fab, { backgroundColor: colors.primary }]}>
-        <Feather name="plus" size={28} color="#fff" />
+        <MaterialCommunityIcons name="plus" size={30} color="#fff" />
       </Pressable>
     </View>
   );
@@ -100,31 +108,26 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
+    alignSelf: "stretch",
     height: 68,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
-  },
-  tabRow: {
-    flex: 1,
-    flexDirection: "row",
+    paddingHorizontal: 6,
   },
   tab: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 2,
+    gap: 3,
   },
   tabLabel: {
     fontSize: 10,
     fontWeight: "600",
   },
-  centerSpacer: {
-    width: 64,
-  },
   fab: {
     position: "absolute",
     top: -24,
+    alignSelf: "center",
     width: 58,
     height: 58,
     borderRadius: 29,

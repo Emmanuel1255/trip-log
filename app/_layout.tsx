@@ -39,7 +39,7 @@ export default function RootLayout() {
                   <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="index" />
                     <Stack.Screen
-                      name="settings"
+                      name="settings/index"
                       options={{ presentation: "modal", animation: "slide_from_bottom" }}
                     />
                     <Stack.Screen

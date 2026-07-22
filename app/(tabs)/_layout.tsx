@@ -7,7 +7,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: "Home" }} />
       <Tabs.Screen name="trips" options={{ title: "Trips" }} />
       <Tabs.Screen name="vehicles-drivers" options={{ title: "Vehicles & Drivers" }} />
-      <Tabs.Screen name="export" options={{ title: "Export" }} />
+      <Tabs.Screen name="export/index" options={{ title: "Export" }} />
     </Tabs>
   );
 }

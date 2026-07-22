@@ -2,15 +2,20 @@ import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { DateTimeField } from "@/components/ui/DateTimeField";
+import { TextField } from "@/components/ui/TextField";
 import { getDriver } from "@/lib/db/queries/drivers";
-import { deleteTrip, getTrip } from "@/lib/db/queries/trips";
+import { deleteTrip, getTrip, updateTrip } from "@/lib/db/queries/trips";
 import { getVehicle } from "@/lib/db/queries/vehicles";
 import type { Driver, Trip, Vehicle } from "@/lib/db/types";
 import { useTheme } from "@/lib/theme/ThemeProvider";
-import { formatDisplayDate, formatTimeDisplay, parseTimeToDate } from "@/lib/utils/date";
+import { formatDisplayDate, formatTime24h, formatTimeDisplay, parseTimeToDate } from "@/lib/utils/date";
+import { isTripComplete } from "@/lib/utils/tripStatus";
 
-function computeTimeTakenMinutes(trip: Trip): number {
+function computeTimeTakenMinutes(trip: Trip): number | null {
+  if (!trip.time_in) return null;
   const outDate = parseTimeToDate(trip.time_out);
   const inDate = parseTimeToDate(trip.time_in);
   const diffMs = inDate.getTime() - outDate.getTime();
@@ -45,8 +50,12 @@ export default function TripDetailScreen() {
 
   if (!trip) return null;
 
+  const isComplete = isTripComplete(trip);
   const timeTakenMinutes = computeTimeTakenMinutes(trip);
-  const avgSpeed = timeTakenMinutes > 0 ? Math.round((trip.distance_km / (timeTakenMinutes / 60)) * 10) / 10 : null;
+  const avgSpeed =
+    timeTakenMinutes && timeTakenMinutes > 0 && trip.distance_km != null
+      ? Math.round((trip.distance_km / (timeTakenMinutes / 60)) * 10) / 10
+      : null;
 
   const handleDelete = () => {
     Alert.alert("Delete Trip", "Remove this trip from the log? This cannot be undone.", [
@@ -91,8 +100,12 @@ export default function TripDetailScreen() {
               {driver?.name ?? "Unknown driver"}
             </Text>
           </View>
-          <View style={[styles.badge, { backgroundColor: `${colors.success}22` }]}>
-            <Text style={{ color: colors.success, fontWeight: "600", fontSize: 12 }}>Completed</Text>
+          <View
+            style={[styles.badge, { backgroundColor: isComplete ? `${colors.success}22` : "#D9A44122" }]}
+          >
+            <Text style={{ color: isComplete ? colors.success : "#D9A441", fontWeight: "600", fontSize: 12 }}>
+              {isComplete ? "Completed" : "In Progress"}
+            </Text>
           </View>
         </View>
         <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 8 }]}>
@@ -113,21 +126,23 @@ export default function TripDetailScreen() {
         </View>
         <View style={[styles.timelineConnector, { backgroundColor: colors.hairline }]} />
         <View style={styles.timelineRow}>
-          <View style={[styles.timelineDot, { backgroundColor: colors.alert }]} />
+          <View style={[styles.timelineDot, { backgroundColor: trip.time_in ? colors.alert : colors.hairline }]} />
           <View style={styles.timelineText}>
-            <Text style={{ color: colors.alert, fontWeight: "600" }}>Arrival</Text>
+            <Text style={{ color: trip.time_in ? colors.alert : colors.textSecondary, fontWeight: "600" }}>
+              Arrival
+            </Text>
             <Text style={[typography.body, { color: colors.textPrimary }]}>{trip.arrival_location}</Text>
           </View>
           <Text style={[typography.caption, tabularNumsStyle, { color: colors.textSecondary }]}>
-            {formatTimeDisplay(trip.time_in)}
+            {trip.time_in ? formatTimeDisplay(trip.time_in) : "Pending"}
           </Text>
         </View>
       </Card>
 
       <Card style={styles.section}>
         <View style={styles.statsRow}>
-          <Stat label="Distance" value={`${trip.distance_km} km`} />
-          <Stat label="Time Taken" value={formatDuration(timeTakenMinutes)} />
+          <Stat label="Distance" value={trip.distance_km != null ? `${trip.distance_km} km` : "—"} />
+          <Stat label="Time Taken" value={timeTakenMinutes != null ? formatDuration(timeTakenMinutes) : "—"} />
           <Stat label="Avg Speed" value={avgSpeed != null ? `${avgSpeed} km/h` : "—"} />
         </View>
       </Card>
@@ -144,14 +159,14 @@ export default function TripDetailScreen() {
           <View>
             <Text style={[typography.caption, { color: colors.textSecondary }]}>Closing Odometer</Text>
             <Text style={[typography.body, tabularNumsStyle, { color: colors.textPrimary, fontWeight: "600" }]}>
-              {trip.closing_odometer} km
+              {trip.closing_odometer != null ? `${trip.closing_odometer} km` : "Pending"}
             </Text>
           </View>
         </View>
         <View style={styles.totalDistance}>
           <Text style={[typography.caption, { color: colors.textSecondary }]}>Total Distance</Text>
           <Text style={[typography.display, tabularNumsStyle, { color: colors.primary, fontSize: 22 }]}>
-            {trip.distance_km} km
+            {trip.distance_km != null ? `${trip.distance_km} km` : "—"}
           </Text>
         </View>
       </Card>
@@ -159,10 +174,89 @@ export default function TripDetailScreen() {
       <Card style={styles.section}>
         <DetailRow icon="users" label="Passengers" value={trip.passengers ?? "—"} />
         <DetailRow icon="clock" label="Time Out" value={formatTimeDisplay(trip.time_out)} />
-        <DetailRow icon="clock" label="Time In" value={formatTimeDisplay(trip.time_in)} />
+        <DetailRow icon="clock" label="Time In" value={trip.time_in ? formatTimeDisplay(trip.time_in) : "Pending"} />
         <DetailRow icon="file-text" label="Notes" value={trip.notes ?? "—"} last />
       </Card>
+
+      {!isComplete ? <EndTripSection trip={trip} onEnded={setTrip} /> : null}
     </ScrollView>
+  );
+}
+
+function EndTripSection({ trip, onEnded }: { trip: Trip; onEnded: (trip: Trip) => void }) {
+  const { colors, typography } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
+  const [timeIn, setTimeIn] = useState<Date | null>(null);
+  const [closingOdometer, setClosingOdometer] = useState("");
+  const [passengers, setPassengers] = useState(trip.passengers ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleEndTrip = async () => {
+    setError(null);
+    const closingValue = Number(closingOdometer);
+    if (!closingOdometer || !Number.isFinite(closingValue)) {
+      setError("Enter a closing odometer reading.");
+      return;
+    }
+    if (closingValue < trip.opening_odometer) {
+      setError("Closing odometer must be greater than or equal to opening odometer.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const updated = await updateTrip(trip.id, {
+        time_in: timeIn ? formatTime24h(timeIn) : formatTime24h(new Date()),
+        closing_odometer: closingValue,
+        passengers: passengers || null,
+      });
+      onEnded(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to end trip.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isOpen) {
+    return (
+      <Card style={[styles.section, { backgroundColor: "#D9A44115" }]}>
+        <Text style={[typography.body, { color: colors.textPrimary, fontWeight: "600" }]}>
+          This trip is still in progress
+        </Text>
+        <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4, marginBottom: 12 }]}>
+          Fill in the time in and closing odometer to complete it.
+        </Text>
+        <Button label="End Trip" onPress={() => setIsOpen(true)} />
+      </Card>
+    );
+  }
+
+  return (
+    <Card style={styles.section}>
+      <Text style={[typography.body, { color: colors.textPrimary, fontWeight: "600", marginBottom: 12 }]}>
+        End Trip
+      </Text>
+      <DateTimeField label="Time In" mode="time" value={timeIn} onChange={setTimeIn} />
+      <TextField
+        label="Closing Odometer (km)"
+        placeholder="0"
+        keyboardType="numeric"
+        value={closingOdometer}
+        onChangeText={setClosingOdometer}
+      />
+      <TextField
+        label="Passengers (Optional)"
+        placeholder="Mr. Kallon, Ms. Kamara"
+        value={passengers}
+        onChangeText={setPassengers}
+      />
+      {error ? (
+        <Text style={[typography.caption, { color: colors.alert, marginBottom: 12 }]}>{error}</Text>
+      ) : null}
+      <Button label="Complete Trip" onPress={handleEndTrip} loading={saving} />
+    </Card>
   );
 }
 

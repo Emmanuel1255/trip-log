@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const CREATE_TABLES_SQL = `
 CREATE TABLE IF NOT EXISTS drivers (
@@ -39,11 +39,11 @@ CREATE TABLE IF NOT EXISTS trips (
   departure_location TEXT NOT NULL,
   time_out TEXT NOT NULL,
   arrival_location TEXT NOT NULL,
-  time_in TEXT NOT NULL,
+  time_in TEXT,
   passengers TEXT,
   opening_odometer REAL NOT NULL,
-  closing_odometer REAL NOT NULL,
-  distance_km REAL NOT NULL,
+  closing_odometer REAL,
+  distance_km REAL,
   notes TEXT,
   synced_at TEXT,
   created_at TEXT NOT NULL,
@@ -91,4 +91,46 @@ CREATE INDEX IF NOT EXISTS idx_trips_date ON trips (trip_date);
 CREATE INDEX IF NOT EXISTS idx_fuel_vehicle ON fuel_entries (vehicle_id);
 CREATE INDEX IF NOT EXISTS idx_fuel_trip ON fuel_entries (trip_id);
 CREATE INDEX IF NOT EXISTS idx_sync_queue_status ON sync_queue (status, created_at);
+`;
+
+/**
+ * v1 -> v2: trips.time_in / closing_odometer / distance_km become nullable so a trip
+ * can be saved "in progress" and completed later. SQLite has no ALTER COLUMN DROP NOT NULL,
+ * so the table is recreated with the relaxed schema and existing rows copied across.
+ */
+export const MIGRATE_V1_TO_V2_SQL = `
+BEGIN TRANSACTION;
+
+CREATE TABLE trips_v2 (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  trip_number TEXT NOT NULL,
+  vehicle_id TEXT NOT NULL,
+  driver_id TEXT NOT NULL,
+  trip_date TEXT NOT NULL,
+  departure_location TEXT NOT NULL,
+  time_out TEXT NOT NULL,
+  arrival_location TEXT NOT NULL,
+  time_in TEXT,
+  passengers TEXT,
+  opening_odometer REAL NOT NULL,
+  closing_odometer REAL,
+  distance_km REAL,
+  notes TEXT,
+  synced_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (vehicle_id) REFERENCES vehicles(id),
+  FOREIGN KEY (driver_id) REFERENCES drivers(id)
+);
+
+INSERT INTO trips_v2 SELECT * FROM trips;
+DROP TABLE trips;
+ALTER TABLE trips_v2 RENAME TO trips;
+
+CREATE INDEX IF NOT EXISTS idx_trips_vehicle ON trips (vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_trips_driver ON trips (driver_id);
+CREATE INDEX IF NOT EXISTS idx_trips_date ON trips (trip_date);
+
+COMMIT;
 `;

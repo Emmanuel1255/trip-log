@@ -8,6 +8,7 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { deleteDriver, getDriver } from "@/lib/db/queries/drivers";
 import type { Driver } from "@/lib/db/types";
 import { formatDisplayDate } from "@/lib/utils/date";
+import { isTripComplete } from "@/lib/utils/tripStatus";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
 export default function DriverDetailScreen() {
@@ -22,7 +23,7 @@ export default function DriverDetailScreen() {
   }, [id]);
 
   const vehicleById = useMemo(() => new Map(vehicles.map((v) => [v.id, v])), [vehicles]);
-  const totalDistance = Math.round(trips.reduce((sum, t) => sum + t.distance_km, 0));
+  const totalDistance = Math.round(trips.reduce((sum, t) => sum + (t.distance_km ?? 0), 0));
   const recentTrips = trips.slice(0, 5);
 
   if (!driver) return null;
@@ -117,9 +118,13 @@ export default function DriverDetailScreen() {
                     · {trip.departure_location} → {trip.arrival_location}
                   </Text>
                 </View>
-                <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
-                  {trip.distance_km} km
-                </Text>
+                {isTripComplete(trip) ? (
+                  <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
+                    {trip.distance_km} km
+                  </Text>
+                ) : (
+                  <Text style={{ color: "#D9A441", fontSize: 11, fontWeight: "600" }}>In Progress</Text>
+                )}
               </Pressable>
             ))}
           </View>

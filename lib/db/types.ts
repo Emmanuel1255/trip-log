@@ -37,11 +37,11 @@ export interface Trip {
   departure_location: string;
   time_out: string; // HH:mm
   arrival_location: string;
-  time_in: string; // HH:mm
+  time_in: string | null; // HH:mm, set when the trip is ended
   passengers: string | null;
   opening_odometer: number;
-  closing_odometer: number;
-  distance_km: number;
+  closing_odometer: number | null; // set when the trip is ended
+  distance_km: number | null; // null while the trip is in progress
   notes: string | null;
   synced_at: string | null;
   created_at: string;

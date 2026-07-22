@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import type { Driver, Trip, Vehicle } from "@/lib/db/types";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { formatTimeDisplay } from "@/lib/utils/date";
+import { isTripComplete } from "@/lib/utils/tripStatus";
 
 interface TripRowProps {
   trip: Trip;
@@ -16,6 +17,7 @@ interface TripRowProps {
 
 export function TripRow({ trip, vehicle, driver, onPress, onDelete }: TripRowProps) {
   const { colors, typography, radii, tabularNumsStyle } = useTheme();
+  const isComplete = isTripComplete(trip);
 
   return (
     <Swipeable
@@ -38,15 +40,21 @@ export function TripRow({ trip, vehicle, driver, onPress, onDelete }: TripRowPro
               {driver?.name ?? "Unknown driver"}
             </Text>
             <View style={styles.timeRow}>
-              <View style={[styles.dot, { backgroundColor: colors.success }]} />
+              <View style={[styles.dot, { backgroundColor: isComplete ? colors.success : "#D9A441" }]} />
               <Text style={[typography.caption, { color: colors.textSecondary }]}>
-                {formatTimeDisplay(trip.time_out)} → {formatTimeDisplay(trip.time_in)}
+                {formatTimeDisplay(trip.time_out)} → {trip.time_in ? formatTimeDisplay(trip.time_in) : "In progress"}
               </Text>
             </View>
           </View>
-          <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
-            {trip.distance_km} km
-          </Text>
+          {isComplete ? (
+            <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
+              {trip.distance_km} km
+            </Text>
+          ) : (
+            <View style={[styles.progressBadge, { backgroundColor: "#D9A44122" }]}>
+              <Text style={{ color: "#D9A441", fontSize: 11, fontWeight: "600" }}>In Progress</Text>
+            </View>
+          )}
         </Card>
       </Pressable>
     </Swipeable>
@@ -86,5 +94,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  progressBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
 });

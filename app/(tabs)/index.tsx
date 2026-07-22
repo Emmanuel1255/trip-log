@@ -12,6 +12,7 @@ import { useDrivers } from "@/hooks/useDrivers";
 import type { Trip } from "@/lib/db/types";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { formatDisplayDate, formatTimeDisplay, getDatePresetRange } from "@/lib/utils/date";
+import { isTripComplete } from "@/lib/utils/tripStatus";
 
 const QUICK_ACTIONS = [
   { key: "log-trip", label: "Log Trip", sublabel: "Add new trip", icon: "plus" as const, color: "#266CA9" },
@@ -35,7 +36,7 @@ export default function HomeScreen() {
   const driverById = useMemo(() => new Map(drivers.map((d) => [d.id, d])), [drivers]);
 
   const tripsThisWeek = weekTrips.length;
-  const totalDistanceThisWeek = Math.round(weekTrips.reduce((sum, t) => sum + t.distance_km, 0));
+  const totalDistanceThisWeek = Math.round(weekTrips.reduce((sum, t) => sum + (t.distance_km ?? 0), 0));
   const recentTrips = allTrips.slice(0, 5);
 
   const handleQuickAction = (key: string) => {
@@ -168,6 +169,7 @@ function RecentTripRow({
   onPress: () => void;
 }) {
   const { colors, typography, radii, tabularNumsStyle } = useTheme();
+  const isComplete = isTripComplete(trip);
 
   return (
     <Pressable
@@ -185,9 +187,13 @@ function RecentTripRow({
           {driverName} · {formatDisplayDate(trip.trip_date)} {formatTimeDisplay(trip.time_out)}
         </Text>
       </View>
-      <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
-        {trip.distance_km} km
-      </Text>
+      {isComplete ? (
+        <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
+          {trip.distance_km} km
+        </Text>
+      ) : (
+        <Text style={{ color: "#D9A441", fontSize: 11, fontWeight: "600" }}>In Progress</Text>
+      )}
     </Pressable>
   );
 }

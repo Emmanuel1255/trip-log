@@ -3,7 +3,7 @@ import { getDb } from "@/lib/db/client";
 import type { Trip } from "@/lib/db/types";
 import { useTripsVersionStore } from "@/lib/state/tripsStore";
 import { enqueue } from "@/lib/sync/outbox";
-import { calculateDistanceKm } from "@/lib/utils/distance";
+import { calculateDistanceKmOrNull } from "@/lib/utils/distance";
 import { nowIso } from "@/lib/utils/date";
 import { formatTripNumber } from "@/lib/utils/tripNumber";
 
@@ -22,10 +22,10 @@ export interface NewTripInput {
   departureLocation: string;
   timeOut: string; // HH:mm
   arrivalLocation: string;
-  timeIn: string; // HH:mm
+  timeIn?: string | null; // HH:mm, omit while the trip is in progress
   passengers?: string | null;
   openingOdometer: number;
-  closingOdometer: number;
+  closingOdometer?: number | null; // omit while the trip is in progress
   notes?: string | null;
 }
 
@@ -97,11 +97,11 @@ export async function insertTrip(input: NewTripInput): Promise<Trip> {
     departure_location: input.departureLocation,
     time_out: input.timeOut,
     arrival_location: input.arrivalLocation,
-    time_in: input.timeIn,
+    time_in: input.timeIn ?? null,
     passengers: input.passengers ?? null,
     opening_odometer: input.openingOdometer,
-    closing_odometer: input.closingOdometer,
-    distance_km: calculateDistanceKm(input.openingOdometer, input.closingOdometer),
+    closing_odometer: input.closingOdometer ?? null,
+    distance_km: calculateDistanceKmOrNull(input.openingOdometer, input.closingOdometer),
     notes: input.notes ?? null,
     synced_at: null,
     created_at: timestamp,
@@ -162,7 +162,7 @@ export async function updateTrip(
   const merged = { ...existing, ...updates };
   const updated: Trip = {
     ...merged,
-    distance_km: calculateDistanceKm(merged.opening_odometer, merged.closing_odometer),
+    distance_km: calculateDistanceKmOrNull(merged.opening_odometer, merged.closing_odometer),
     updated_at: nowIso(),
   };
 

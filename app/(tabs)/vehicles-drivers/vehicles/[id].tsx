@@ -9,6 +9,7 @@ import { deleteVehicle, getVehicle } from "@/lib/db/queries/vehicles";
 import type { Vehicle } from "@/lib/db/types";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { formatDisplayDate } from "@/lib/utils/date";
+import { isTripComplete } from "@/lib/utils/tripStatus";
 
 export default function VehicleDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +23,7 @@ export default function VehicleDetailScreen() {
   }, [id]);
 
   const driverById = useMemo(() => new Map(drivers.map((d) => [d.id, d])), [drivers]);
-  const totalDistance = Math.round(trips.reduce((sum, t) => sum + t.distance_km, 0));
+  const totalDistance = Math.round(trips.reduce((sum, t) => sum + (t.distance_km ?? 0), 0));
   const recentTrips = trips.slice(0, 5);
 
   if (!vehicle) return null;
@@ -113,9 +114,13 @@ export default function VehicleDetailScreen() {
                     {driverById.get(trip.driver_id)?.name ?? "Unknown driver"} · {trip.departure_location} → {trip.arrival_location}
                   </Text>
                 </View>
-                <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
-                  {trip.distance_km} km
-                </Text>
+                {isTripComplete(trip) ? (
+                  <Text style={[typography.body, tabularNumsStyle, { color: colors.primary, fontWeight: "700" }]}>
+                    {trip.distance_km} km
+                  </Text>
+                ) : (
+                  <Text style={{ color: "#D9A441", fontSize: 11, fontWeight: "600" }}>In Progress</Text>
+                )}
               </Pressable>
             ))}
           </View>

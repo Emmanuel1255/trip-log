@@ -29,10 +29,10 @@ function EditTripForm({ trip }: { trip: Trip }) {
       departureLocation: trip.departure_location,
       timeOut: parseTimeToDate(trip.time_out, tripDate),
       arrivalLocation: trip.arrival_location,
-      timeIn: parseTimeToDate(trip.time_in, tripDate),
+      timeIn: trip.time_in ? parseTimeToDate(trip.time_in, tripDate) : null,
       passengers: trip.passengers ?? "",
       openingOdometer: String(trip.opening_odometer),
-      closingOdometer: String(trip.closing_odometer),
+      closingOdometer: trip.closing_odometer != null ? String(trip.closing_odometer) : "",
       notes: trip.notes ?? "",
     },
   });
@@ -41,7 +41,7 @@ function EditTripForm({ trip }: { trip: Trip }) {
   const driverOptions = drivers.map((d) => ({ label: d.name, value: d.id }));
 
   const handleSave = async () => {
-    if (!values.vehicleId || !values.driverId || !values.timeOut || !values.timeIn) return;
+    if (!values.vehicleId || !values.driverId || !values.timeOut) return;
     setSaving(true);
     setSubmitError(null);
     try {
@@ -52,10 +52,10 @@ function EditTripForm({ trip }: { trip: Trip }) {
         departure_location: values.departureLocation.trim(),
         time_out: formatTime24h(values.timeOut),
         arrival_location: values.arrivalLocation.trim(),
-        time_in: formatTime24h(values.timeIn),
+        time_in: values.timeIn ? formatTime24h(values.timeIn) : null,
         passengers: values.passengers || null,
         opening_odometer: Number(values.openingOdometer),
-        closing_odometer: Number(values.closingOdometer),
+        closing_odometer: values.closingOdometer ? Number(values.closingOdometer) : null,
         notes: values.notes || null,
       });
       router.back();

@@ -37,7 +37,7 @@ function LogTripSheetForm({ onSaved }: { onSaved: () => void }) {
   const driverOptions = drivers.map((d) => ({ label: d.name, value: d.id }));
 
   const handleSave = async () => {
-    if (!session?.user.id || !values.vehicleId || !values.driverId || !values.timeOut || !values.timeIn) {
+    if (!session?.user.id || !values.vehicleId || !values.driverId || !values.timeOut) {
       return;
     }
     setSaving(true);
@@ -51,10 +51,10 @@ function LogTripSheetForm({ onSaved }: { onSaved: () => void }) {
         departureLocation: values.departureLocation.trim(),
         timeOut: formatTime24h(values.timeOut),
         arrivalLocation: values.arrivalLocation.trim(),
-        timeIn: formatTime24h(values.timeIn),
+        timeIn: values.timeIn ? formatTime24h(values.timeIn) : null,
         passengers: values.passengers || null,
         openingOdometer: Number(values.openingOdometer),
-        closingOdometer: Number(values.closingOdometer),
+        closingOdometer: values.closingOdometer ? Number(values.closingOdometer) : null,
         notes: values.notes || null,
       });
       onSaved();

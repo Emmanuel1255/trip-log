@@ -77,11 +77,16 @@ export function TripFormFields({
         value={values.arrivalLocation}
         onChangeText={setters.setArrivalLocation}
       />
-      <DateTimeField label="Time In" mode="time" value={values.timeIn} onChange={setters.setTimeIn} />
+      <DateTimeField
+        label="Time In (Optional — fill in when you end the trip)"
+        mode="time"
+        value={values.timeIn}
+        onChange={setters.setTimeIn}
+      />
 
       <TextField
         as={textInputComponent}
-        label="Passengers"
+        label="Passengers (Optional)"
         placeholder="Mr. Kallon, Ms. Kamara"
         value={values.passengers}
         onChangeText={setters.setPassengers}
@@ -101,8 +106,8 @@ export function TripFormFields({
         <View style={styles.odometerField}>
           <TextField
             as={textInputComponent}
-            label="Closing Odometer (km)"
-            placeholder="0"
+            label="Closing Odometer (km) (Optional)"
+            placeholder="Fill in when you end the trip"
             keyboardType="numeric"
             value={values.closingOdometer}
             onChangeText={setters.setClosingOdometer}
@@ -114,7 +119,7 @@ export function TripFormFields({
       <View style={styles.distanceCard}>
         <Text style={[typography.caption, { color: colors.textSecondary }]}>Total Distance</Text>
         <Text style={[typography.display, tabularNumsStyle, { color: colors.primary, fontSize: 24 }]}>
-          {distanceKm != null ? `${distanceKm} km` : "—"}
+          {distanceKm != null ? `${distanceKm} km` : "In progress"}
         </Text>
       </View>
 

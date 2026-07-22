@@ -41,7 +41,8 @@ export function useTripForm({ initialValues, autoFillOpeningOdometer }: UseTripF
     (async () => {
       const latestTrip = await getLatestTripForVehicle(vehicleId);
       if (latestTrip) {
-        setOpeningOdometer(String(latestTrip.closing_odometer));
+        const lastReading = latestTrip.closing_odometer ?? latestTrip.opening_odometer;
+        setOpeningOdometer(String(lastReading));
         return;
       }
       const vehicle = await getVehicle(vehicleId);
@@ -54,13 +55,14 @@ export function useTripForm({ initialValues, autoFillOpeningOdometer }: UseTripF
 
   const openingValue = parseFloat(openingOdometer);
   const closingValue = parseFloat(closingOdometer);
+  const hasClosingReading = closingOdometer.trim().length > 0;
   const hasValidOdometerPair =
     Number.isFinite(openingValue) && Number.isFinite(closingValue) && closingValue >= openingValue;
 
-  const distanceKm = hasValidOdometerPair ? calculateDistanceKm(openingValue, closingValue) : null;
+  const distanceKm = hasClosingReading && hasValidOdometerPair ? calculateDistanceKm(openingValue, closingValue) : null;
 
   const odometerError =
-    openingOdometer && closingOdometer && Number.isFinite(openingValue) && Number.isFinite(closingValue) && closingValue < openingValue
+    hasClosingReading && Number.isFinite(openingValue) && Number.isFinite(closingValue) && closingValue < openingValue
       ? "Closing odometer must be greater than or equal to opening odometer."
       : undefined;
 
@@ -70,10 +72,8 @@ export function useTripForm({ initialValues, autoFillOpeningOdometer }: UseTripF
       departureLocation.trim() &&
       timeOut &&
       arrivalLocation.trim() &&
-      timeIn &&
       openingOdometer &&
-      closingOdometer &&
-      hasValidOdometerPair
+      (!hasClosingReading || hasValidOdometerPair)
   );
 
   return {

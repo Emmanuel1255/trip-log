@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
 interface NumericPadProps {
@@ -18,6 +19,21 @@ const KEYS = [
 export function NumericPad({ onDigit, onBackspace, onBiometric, showBiometric }: NumericPadProps) {
   const { colors } = useTheme();
 
+  const handleDigit = (digit: string) => {
+    Haptics.selectionAsync();
+    onDigit(digit);
+  };
+
+  const handleBackspace = () => {
+    Haptics.selectionAsync();
+    onBackspace();
+  };
+
+  const handleBiometric = () => {
+    Haptics.selectionAsync();
+    onBiometric?.();
+  };
+
   return (
     <View style={styles.grid}>
       {KEYS.map((row, rowIndex) => (
@@ -25,7 +41,7 @@ export function NumericPad({ onDigit, onBackspace, onBiometric, showBiometric }:
           {row.map((digit) => (
             <Pressable
               key={digit}
-              onPress={() => onDigit(digit)}
+              onPress={() => handleDigit(digit)}
               style={[styles.key, { backgroundColor: colors.surfaceSolid }]}
             >
               <Text style={[styles.keyLabel, { color: colors.textPrimary }]}>{digit}</Text>
@@ -35,19 +51,19 @@ export function NumericPad({ onDigit, onBackspace, onBiometric, showBiometric }:
       ))}
       <View style={styles.row}>
         <Pressable
-          onPress={onBiometric}
+          onPress={handleBiometric}
           disabled={!showBiometric}
           style={[styles.key, { backgroundColor: showBiometric ? colors.surfaceSolid : "transparent" }]}
         >
           {showBiometric ? <Feather name="lock" size={22} color={colors.primary} /> : null}
         </Pressable>
         <Pressable
-          onPress={() => onDigit("0")}
+          onPress={() => handleDigit("0")}
           style={[styles.key, { backgroundColor: colors.surfaceSolid }]}
         >
           <Text style={[styles.keyLabel, { color: colors.textPrimary }]}>0</Text>
         </Pressable>
-        <Pressable onPress={onBackspace} style={[styles.key, { backgroundColor: colors.surfaceSolid }]}>
+        <Pressable onPress={handleBackspace} style={[styles.key, { backgroundColor: colors.surfaceSolid }]}>
           <Feather name="delete" size={22} color={colors.textPrimary} />
         </Pressable>
       </View>

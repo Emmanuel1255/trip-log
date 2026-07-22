@@ -1,5 +1,5 @@
 import { BlurView } from "expo-blur";
-import { StyleSheet, View, type ViewProps } from "react-native";
+import { Platform, StyleSheet, View, type ViewProps } from "react-native";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
 export function GlassCard({ style, children, ...rest }: ViewProps) {
@@ -14,12 +14,15 @@ export function GlassCard({ style, children, ...rest }: ViewProps) {
       ]}
       {...rest}
     >
-      <BlurView
-        intensity={40}
-        tint={mode}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />
+      {Platform.OS === "ios" ? (
+        <>
+          <BlurView intensity={40} tint={mode} style={StyleSheet.absoluteFill} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />
+        </>
+      ) : (
+        // Android: skip real blur for performance, use a near-opaque solid instead.
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceOpaque }]} />
+      )}
       <View style={styles.content}>{children}</View>
     </View>
   );

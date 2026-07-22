@@ -1,8 +1,10 @@
 import * as LocalAuthentication from "expo-local-authentication";
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { NumericPad } from "@/components/ui/NumericPad";
 import { PinDots } from "@/components/ui/PinDots";
+import { usePinShake } from "@/hooks/usePinShake";
 import {
   APP_LOCK_MAX_ATTEMPTS,
   getCooldownUntil,
@@ -25,6 +27,7 @@ export function UnlockScreen({ onUnlock }: UnlockScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const { shakeStyle, triggerShake } = usePinShake();
 
   const attemptBiometric = useCallback(async () => {
     const enabled = await isBiometricEnabled();
@@ -75,6 +78,7 @@ export function UnlockScreen({ onUnlock }: UnlockScreenProps) {
       if (next.length === PIN_LENGTH) {
         const { attempts, cooldownUntil } = await registerFailedAttempt();
         setPin("");
+        triggerShake();
         if (cooldownUntil) {
           setCooldownRemaining(Math.ceil((cooldownUntil - Date.now()) / 1000));
           setError("Too many attempts. Try again shortly.");
@@ -98,7 +102,9 @@ export function UnlockScreen({ onUnlock }: UnlockScreenProps) {
         Enter your PIN to continue
       </Text>
 
-      <PinDots length={PIN_LENGTH} filled={pin.length} />
+      <Animated.View style={shakeStyle}>
+        <PinDots length={PIN_LENGTH} filled={pin.length} />
+      </Animated.View>
 
       {error ? (
         <Text style={[typography.caption, { color: colors.alert, textAlign: "center" }]}>

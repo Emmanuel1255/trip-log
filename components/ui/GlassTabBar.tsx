@@ -1,7 +1,8 @@
 import { BlurView } from "expo-blur";
 import { Feather } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 import { useLogTripSheet } from "@/hooks/useLogTripSheet";
@@ -57,20 +58,32 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
     );
   };
 
+  const handleLogTripPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    logTripSheet.present();
+  };
+
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom || 12 }]} pointerEvents="box-none">
-      <View style={[styles.bar, { borderRadius: radii.glass, borderColor: colors.hairline }]}>
-        <BlurView intensity={50} tint={mode} style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />
+    <View
+      style={[styles.container, { paddingBottom: Math.max(insets.bottom, 12) }]}
+      pointerEvents="box-none"
+    >
+      <View style={[styles.bar, { borderRadius: radii.glass + 6, borderColor: colors.hairline }]}>
+        {Platform.OS === "ios" ? (
+          <>
+            <BlurView intensity={50} tint={mode} style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surface }]} />
+          </>
+        ) : (
+          // Android: skip real blur for performance, use a near-opaque solid instead.
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceOpaque }]} />
+        )}
         <View style={styles.tabRow}>{leftRoutes.map(renderTab)}</View>
         <View style={styles.centerSpacer} />
         <View style={styles.tabRow}>{rightRoutes.map(renderTab)}</View>
       </View>
-      <Pressable
-        onPress={() => logTripSheet.present()}
-        style={[styles.fab, { backgroundColor: colors.primary }]}
-      >
-        <Feather name="plus" size={26} color="#fff" />
+      <Pressable onPress={handleLogTripPress} style={[styles.fab, { backgroundColor: colors.primary }]}>
+        <Feather name="plus" size={28} color="#fff" />
       </Pressable>
     </View>
   );
@@ -88,7 +101,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
-    height: 64,
+    height: 68,
     borderWidth: 1,
     overflow: "hidden",
   },
@@ -112,14 +125,14 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     top: -24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
   },

@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from "react-native";
+import * as Haptics from "expo-haptics";
+import { ActivityIndicator, Pressable, StyleSheet, Text, type GestureResponderEvent, type PressableProps } from "react-native";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
 interface ButtonProps extends Omit<PressableProps, "style"> {
@@ -7,14 +8,20 @@ interface ButtonProps extends Omit<PressableProps, "style"> {
   loading?: boolean;
 }
 
-export function Button({ label, variant = "primary", loading, disabled, ...rest }: ButtonProps) {
+export function Button({ label, variant = "primary", loading, disabled, onPress, ...rest }: ButtonProps) {
   const { colors, radii } = useTheme();
   const isPrimary = variant === "primary";
+
+  const handlePress = (event: GestureResponderEvent) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress?.(event);
+  };
 
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled || loading}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.base,
         {
@@ -23,6 +30,7 @@ export function Button({ label, variant = "primary", loading, disabled, ...rest 
           borderWidth: isPrimary ? 0 : 1,
           borderRadius: radii.card,
           opacity: pressed || disabled ? 0.7 : 1,
+          transform: [{ scale: pressed ? 0.97 : 1 }],
         },
       ]}
       {...rest}

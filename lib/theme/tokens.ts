@@ -2,6 +2,8 @@ export interface Palette {
   background: string;
   surface: string;
   surfaceSolid: string;
+  /** Near-opaque fallback for glass surfaces on Android, where real blur is skipped for perf. */
+  surfaceOpaque: string;
   hairline: string;
   primary: string;
   deepAccent: string;
@@ -20,6 +22,7 @@ export const palette: Record<ThemeMode, Palette> = {
     background: "#F4F7FB",
     surface: "rgba(255,255,255,0.68)",
     surfaceSolid: "#FFFFFF",
+    surfaceOpaque: "#FFFFFFEE",
     hairline: "rgba(4,29,86,0.08)",
     primary: "#266CA9",
     deepAccent: "#0F2573",
@@ -34,6 +37,7 @@ export const palette: Record<ThemeMode, Palette> = {
     background: "#0B111C",
     surface: "rgba(0,0,0,0.6)",
     surfaceSolid: "#131B29",
+    surfaceOpaque: "#131B29F0",
     hairline: "rgba(237,241,247,0.08)",
     primary: "#266CA9",
     deepAccent: "#0F2573",

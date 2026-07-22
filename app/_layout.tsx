@@ -36,7 +36,16 @@ export default function RootLayout() {
             <SessionProvider>
               <AppLockProvider>
                 <BottomSheetModalProvider>
-                  <Stack screenOptions={{ headerShown: false }} />
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen
+                      name="settings"
+                      options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                    />
+                    <Stack.Screen
+                      name="settings/change-pin"
+                      options={{ presentation: "modal", animation: "slide_from_bottom" }}
+                    />
+                  </Stack>
                   <LogTripSheet />
                   <LogFuelSheet />
                 </BottomSheetModalProvider>

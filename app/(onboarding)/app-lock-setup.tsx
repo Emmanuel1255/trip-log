@@ -1,10 +1,12 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
 import { NumericPad } from "@/components/ui/NumericPad";
 import { PinDots } from "@/components/ui/PinDots";
 import { StepProgress } from "@/components/onboarding/StepProgress";
+import { usePinShake } from "@/hooks/usePinShake";
 import { setupPin } from "@/lib/auth/appLock";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
@@ -16,6 +18,7 @@ export default function AppLockSetupScreen() {
   const [firstPin, setFirstPin] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { shakeStyle, triggerShake } = usePinShake();
 
   const handleDigit = async (digit: string) => {
     const next = (pin + digit).slice(0, PIN_LENGTH);
@@ -38,6 +41,7 @@ export default function AppLockSetupScreen() {
         setPin("");
         setFirstPin("");
         setPhase("create");
+        triggerShake();
       }
     }
   };
@@ -62,7 +66,9 @@ export default function AppLockSetupScreen() {
         {phase === "create" ? "Create PIN" : "Confirm PIN"}
       </Text>
 
-      <PinDots length={PIN_LENGTH} filled={pin.length} />
+      <Animated.View style={shakeStyle}>
+        <PinDots length={PIN_LENGTH} filled={pin.length} />
+      </Animated.View>
 
       {error ? (
         <Text style={[typography.caption, { color: colors.alert, textAlign: "center" }]}>

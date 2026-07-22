@@ -2,8 +2,10 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { NumericPad } from "@/components/ui/NumericPad";
 import { PinDots } from "@/components/ui/PinDots";
+import { usePinShake } from "@/hooks/usePinShake";
 import { setupPin, verifyPin } from "@/lib/auth/appLock";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
@@ -17,6 +19,7 @@ export default function ChangePinScreen() {
   const [firstPin, setFirstPin] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { shakeStyle, triggerShake } = usePinShake();
 
   const titles: Record<Phase, string> = {
     verify: "Enter current PIN",
@@ -39,6 +42,7 @@ export default function ChangePinScreen() {
       } else {
         setError("Incorrect PIN.");
         setPin("");
+        triggerShake();
       }
       return;
     }
@@ -59,6 +63,7 @@ export default function ChangePinScreen() {
         setPin("");
         setFirstPin("");
         setPhase("create");
+        triggerShake();
       }
     }
   };
@@ -79,7 +84,9 @@ export default function ChangePinScreen() {
         {titles[phase]}
       </Text>
 
-      <PinDots length={PIN_LENGTH} filled={pin.length} />
+      <Animated.View style={shakeStyle}>
+        <PinDots length={PIN_LENGTH} filled={pin.length} />
+      </Animated.View>
 
       {error ? (
         <Text style={[typography.caption, { color: colors.alert, textAlign: "center" }]}>{error}</Text>

@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { SyncStatusBadge } from "@/components/ui/SyncStatusBadge";
 import { useLogTripSheet } from "@/hooks/useLogTripSheet";
 import { useLogFuelSheet } from "@/hooks/useLogFuelSheet";
+import { useFuelEntries } from "@/hooks/useFuelEntries";
 import { useTrips } from "@/hooks/useTrips";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useDrivers } from "@/hooks/useDrivers";
@@ -31,12 +32,14 @@ export default function HomeScreen() {
   const weekRange = useMemo(() => getDatePresetRange("week"), []);
   const { trips: weekTrips } = useTrips({ dateFrom: weekRange.dateFrom, dateTo: weekRange.dateTo });
   const { trips: allTrips } = useTrips();
+  const { fuelEntries: weekFuelEntries } = useFuelEntries({ dateFrom: weekRange.dateFrom, dateTo: weekRange.dateTo });
 
   const vehicleById = useMemo(() => new Map(vehicles.map((v) => [v.id, v])), [vehicles]);
   const driverById = useMemo(() => new Map(drivers.map((d) => [d.id, d])), [drivers]);
 
   const tripsThisWeek = weekTrips.length;
   const totalDistanceThisWeek = Math.round(weekTrips.reduce((sum, t) => sum + (t.distance_km ?? 0), 0));
+  const fuelIssuedThisWeek = Math.round(weekFuelEntries.reduce((sum, f) => sum + f.litres, 0));
   const recentTrips = allTrips.slice(0, 5);
 
   const handleQuickAction = (key: string) => {
@@ -82,7 +85,7 @@ export default function HomeScreen() {
         <View style={styles.statsRow}>
           <Stat label="Trips Logged" value={String(tripsThisWeek)} unit="" />
           <Stat label="Total Distance" value={String(totalDistanceThisWeek)} unit="km" />
-          <Stat label="Fuel Issued" value="0" unit="L" />
+          <Stat label="Fuel Issued" value={String(fuelIssuedThisWeek)} unit="L" />
         </View>
       </GlassCard>
 

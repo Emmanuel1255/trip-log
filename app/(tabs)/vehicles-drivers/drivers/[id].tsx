@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/components/ui/Card";
+import { useFuelEntries } from "@/hooks/useFuelEntries";
 import { useTrips } from "@/hooks/useTrips";
 import { useVehicles } from "@/hooks/useVehicles";
 import { deleteDriver, getDriver } from "@/lib/db/queries/drivers";
@@ -17,6 +18,7 @@ export default function DriverDetailScreen() {
   const [driver, setDriver] = useState<Driver | null>(null);
   const { vehicles } = useVehicles();
   const { trips } = useTrips({ driverId: id });
+  const { fuelEntries: allFuelEntries } = useFuelEntries();
 
   useEffect(() => {
     if (id) getDriver(id).then(setDriver);
@@ -25,6 +27,14 @@ export default function DriverDetailScreen() {
   const vehicleById = useMemo(() => new Map(vehicles.map((v) => [v.id, v])), [vehicles]);
   const totalDistance = Math.round(trips.reduce((sum, t) => sum + (t.distance_km ?? 0), 0));
   const recentTrips = trips.slice(0, 5);
+
+  // fuel_entries has no driver_id — attribute fuel to a driver via the trips they drove.
+  const tripIds = useMemo(() => new Set(trips.map((t) => t.id)), [trips]);
+  const driverFuelEntries = useMemo(
+    () => allFuelEntries.filter((f) => f.trip_id && tripIds.has(f.trip_id)),
+    [allFuelEntries, tripIds]
+  );
+  const totalFuel = Math.round(driverFuelEntries.reduce((sum, f) => sum + f.litres, 0));
 
   if (!driver) return null;
 
@@ -81,7 +91,7 @@ export default function DriverDetailScreen() {
         <View style={styles.statsRow}>
           <Stat label="Total Trips" value={String(trips.length)} />
           <Stat label="Total Distance" value={`${totalDistance} km`} />
-          <Stat label="Total Fuel" value="—" />
+          <Stat label="Total Fuel" value={driverFuelEntries.length > 0 ? `${totalFuel} L` : "—"} />
         </View>
       </Card>
 

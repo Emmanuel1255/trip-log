@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DateTimeField } from "@/components/ui/DateTimeField";
 import { TextField } from "@/components/ui/TextField";
+import { useLogFuelSheet } from "@/hooks/useLogFuelSheet";
 import { getDriver } from "@/lib/db/queries/drivers";
 import { deleteTrip, getTrip, updateTrip } from "@/lib/db/queries/trips";
 import { getVehicle } from "@/lib/db/queries/vehicles";
@@ -32,6 +33,7 @@ function formatDuration(minutes: number): string {
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, typography, tabularNumsStyle } = useTheme();
+  const logFuelSheet = useLogFuelSheet();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [driver, setDriver] = useState<Driver | null>(null);
@@ -111,6 +113,13 @@ export default function TripDetailScreen() {
         <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 8 }]}>
           {formatDisplayDate(trip.trip_date)} · Trip ID: {trip.trip_number}
         </Text>
+        <View style={styles.logFuelButton}>
+          <Button
+            label="Log Fuel"
+            variant="secondary"
+            onPress={() => logFuelSheet.present({ tripId: trip.id, vehicleId: trip.vehicle_id })}
+          />
+        </View>
       </Card>
 
       <Card style={styles.section}>
@@ -333,6 +342,9 @@ const styles = StyleSheet.create({
   cancelLink: {
     alignItems: "center",
     marginTop: 12,
+  },
+  logFuelButton: {
+    marginTop: 16,
   },
   titleRow: {
     flexDirection: "row",

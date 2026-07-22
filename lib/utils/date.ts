@@ -40,6 +40,13 @@ export function parseTimeToDate(time24h: string, baseDate: Date = new Date()): D
 
 export type DatePreset = "all" | "today" | "week" | "month";
 
+export const DATE_PRESET_OPTIONS: { label: string; value: DatePreset }[] = [
+  { label: "All Time", value: "all" },
+  { label: "Today", value: "today" },
+  { label: "This Week", value: "week" },
+  { label: "This Month", value: "month" },
+];
+
 export function getDatePresetRange(preset: DatePreset): { dateFrom?: string; dateTo?: string } {
   const now = new Date();
   switch (preset) {

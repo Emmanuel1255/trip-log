@@ -23,6 +23,7 @@ interface SelectFieldProps {
   onChange: (value: string) => void;
   error?: string;
   emptyMessage?: string;
+  disabled?: boolean;
 }
 
 export function SelectField({
@@ -33,6 +34,7 @@ export function SelectField({
   onChange,
   error,
   emptyMessage = "Nothing to select yet.",
+  disabled,
 }: SelectFieldProps) {
   const { colors, radii, typography } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -46,13 +48,14 @@ export function SelectField({
         </Text>
       ) : null}
       <Pressable
-        onPress={() => setIsOpen(true)}
+        onPress={() => !disabled && setIsOpen(true)}
         style={[
           styles.field,
           {
             backgroundColor: colors.surfaceSolid,
             borderColor: error ? colors.alert : colors.hairline,
             borderRadius: radii.card,
+            opacity: disabled ? 0.6 : 1,
           },
         ]}
       >
@@ -62,7 +65,11 @@ export function SelectField({
         >
           {selected ? selected.label : placeholder}
         </Text>
-        <Feather name="chevron-down" size={18} color={colors.textSecondary} />
+        {disabled ? (
+          <Feather name="lock" size={16} color={colors.textSecondary} />
+        ) : (
+          <Feather name="chevron-down" size={18} color={colors.textSecondary} />
+        )}
       </Pressable>
       {error ? (
         <Text style={[typography.caption, { color: colors.alert, marginTop: 4 }]}>{error}</Text>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { useDrivers } from "@/hooks/useDrivers";
+import { useFuelEntries } from "@/hooks/useFuelEntries";
 import { useTrips } from "@/hooks/useTrips";
 import { deleteVehicle, getVehicle } from "@/lib/db/queries/vehicles";
 import type { Vehicle } from "@/lib/db/types";
@@ -17,6 +18,7 @@ export default function VehicleDetailScreen() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const { drivers } = useDrivers();
   const { trips } = useTrips({ vehicleId: id });
+  const { fuelEntries } = useFuelEntries({ vehicleId: id });
 
   useEffect(() => {
     if (id) getVehicle(id).then(setVehicle);
@@ -24,6 +26,7 @@ export default function VehicleDetailScreen() {
 
   const driverById = useMemo(() => new Map(drivers.map((d) => [d.id, d])), [drivers]);
   const totalDistance = Math.round(trips.reduce((sum, t) => sum + (t.distance_km ?? 0), 0));
+  const totalFuel = Math.round(fuelEntries.reduce((sum, f) => sum + f.litres, 0));
   const recentTrips = trips.slice(0, 5);
 
   if (!vehicle) return null;
@@ -80,7 +83,7 @@ export default function VehicleDetailScreen() {
         <View style={styles.statsRow}>
           <Stat label="Total Trips" value={String(trips.length)} />
           <Stat label="Total Distance" value={`${totalDistance} km`} />
-          <Stat label="Total Fuel" value="—" />
+          <Stat label="Total Fuel" value={fuelEntries.length > 0 ? `${totalFuel} L` : "—"} />
         </View>
       </Card>
 

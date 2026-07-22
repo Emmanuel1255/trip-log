@@ -1,14 +1,7 @@
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SelectField, type SelectOption } from "@/components/ui/SelectField";
 import type { Driver, Vehicle } from "@/lib/db/types";
-import type { DatePreset } from "@/lib/utils/date";
-
-const DATE_PRESET_OPTIONS: SelectOption[] = [
-  { label: "All Time", value: "all" },
-  { label: "Today", value: "today" },
-  { label: "This Week", value: "week" },
-  { label: "This Month", value: "month" },
-];
+import { DATE_PRESET_OPTIONS, type DatePreset } from "@/lib/utils/date";
 
 interface TripFilterBarProps {
   vehicles: Vehicle[];

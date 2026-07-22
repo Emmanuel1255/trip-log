@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { DateTimeField } from "@/components/ui/DateTimeField";
-import { GlassSheetBackground } from "@/components/ui/GlassSheetBackground";
 import { SelectField } from "@/components/ui/SelectField";
 import { TextField } from "@/components/ui/TextField";
 import { useLogFuelSheetStore, useRegisterLogFuelSheetRef } from "@/hooks/useLogFuelSheet";
@@ -120,6 +119,7 @@ function LogFuelSheetForm({ onSaved }: { onSaved: () => void }) {
 }
 
 export function LogFuelSheet() {
+  const { colors, radii } = useTheme();
   const ref = useRegisterLogFuelSheetRef();
   const [formKey, setFormKey] = useState(0);
   const snapPoints = useMemo(() => ["70%"], []);
@@ -128,7 +128,12 @@ export function LogFuelSheet() {
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
-      backgroundComponent={GlassSheetBackground}
+      backgroundStyle={{
+        backgroundColor: colors.surfaceSolid,
+        borderTopLeftRadius: radii.glass,
+        borderTopRightRadius: radii.glass,
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.separator, width: 40, height: 4 }}
       enablePanDownToClose
       keyboardBehavior="extend"
       keyboardBlurBehavior="restore"

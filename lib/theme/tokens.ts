@@ -5,6 +5,8 @@ export interface Palette {
   /** Near-opaque fallback for glass surfaces on Android, where real blur is skipped for perf. */
   surfaceOpaque: string;
   hairline: string;
+  /** Visible divider/grabber color — more visible than the faint hairline border. */
+  separator: string;
   primary: string;
   deepAccent: string;
   lightAccent: string;
@@ -24,6 +26,7 @@ export const palette: Record<ThemeMode, Palette> = {
     surfaceSolid: "#FFFFFF",
     surfaceOpaque: "#FFFFFFEE",
     hairline: "rgba(4,29,86,0.08)",
+    separator: "#D8DEE6",
     primary: "#266CA9",
     deepAccent: "#0F2573",
     lightAccent: "#ADE1FB",
@@ -39,6 +42,7 @@ export const palette: Record<ThemeMode, Palette> = {
     surfaceSolid: "#131B29",
     surfaceOpaque: "#131B29F0",
     hairline: "rgba(237,241,247,0.08)",
+    separator: "#2A3342",
     primary: "#266CA9",
     deepAccent: "#0F2573",
     lightAccent: "#ADE1FB",

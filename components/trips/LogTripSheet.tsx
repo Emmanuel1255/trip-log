@@ -6,7 +6,6 @@ import {
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
-import { GlassSheetBackground } from "@/components/ui/GlassSheetBackground";
 import { TripFormFields } from "./TripFormFields";
 import { useTripForm } from "./useTripForm";
 import { useDrivers } from "@/hooks/useDrivers";
@@ -89,6 +88,7 @@ function LogTripSheetForm({ onSaved }: { onSaved: () => void }) {
 }
 
 export function LogTripSheet() {
+  const { colors, radii } = useTheme();
   const ref = useRegisterLogTripSheetRef();
   const [formKey, setFormKey] = useState(0);
   const snapPoints = useMemo(() => ["90%"], []);
@@ -97,7 +97,12 @@ export function LogTripSheet() {
     <BottomSheetModal
       ref={ref}
       snapPoints={snapPoints}
-      backgroundComponent={GlassSheetBackground}
+      backgroundStyle={{
+        backgroundColor: colors.surfaceSolid,
+        borderTopLeftRadius: radii.glass,
+        borderTopRightRadius: radii.glass,
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.separator, width: 40, height: 4 }}
       enablePanDownToClose
       keyboardBehavior="extend"
       keyboardBlurBehavior="restore"

@@ -36,7 +36,8 @@ export default function RootLayout() {
             <SessionProvider>
               <AppLockProvider>
                 <BottomSheetModalProvider>
-                  <Stack screenOptions={{ headerShown: false }}>
+                  <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="index" />
                     <Stack.Screen
                       name="settings"
                       options={{ presentation: "modal", animation: "slide_from_bottom" }}

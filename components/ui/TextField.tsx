@@ -1,17 +1,20 @@
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { useTheme } from "@/lib/theme/ThemeProvider";
 
 interface TextFieldProps extends TextInputProps {
   label?: string;
   error?: string;
+  /** Override the rendered input, e.g. BottomSheetTextInput when used inside a bottom sheet. */
+  as?: ComponentType<TextInputProps>;
 }
 
-export function TextField({ label, error, style, secureTextEntry, ...rest }: TextFieldProps) {
+export function TextField({ label, error, style, secureTextEntry, as, ...rest }: TextFieldProps) {
   const { colors, radii, typography } = useTheme();
   const [isRevealed, setIsRevealed] = useState(false);
   const isPasswordField = secureTextEntry != null;
+  const Input = as ?? TextInput;
 
   return (
     <View style={styles.container}>
@@ -21,7 +24,7 @@ export function TextField({ label, error, style, secureTextEntry, ...rest }: Tex
         </Text>
       ) : null}
       <View style={styles.inputWrapper}>
-        <TextInput
+        <Input
           placeholderTextColor={colors.textSecondary}
           secureTextEntry={isPasswordField ? secureTextEntry && !isRevealed : secureTextEntry}
           style={[

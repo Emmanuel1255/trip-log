@@ -1,22 +1,26 @@
 {
   "expo": {
-    "name": "triplog-app",
-    "slug": "triplog-app",
+    "name": "TripLog",
+    "slug": "triplog",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "triplogapp",
+    "scheme": "triplog",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "sl.triplog.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "TripLog uses Face ID to quickly and securely unlock the app instead of typing your PIN."
+      }
     },
     "android": {
+      "package": "sl.triplog.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#266CA9",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -25,12 +29,19 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "TripLog uses Face ID to quickly and securely unlock the app instead of typing your PIN."
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#0B111C",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 160
         }
       ]
     ],

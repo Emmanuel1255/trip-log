@@ -178,21 +178,32 @@ export default function TripDetailScreen() {
         <DetailRow icon="file-text" label="Notes" value={trip.notes ?? "—"} last />
       </Card>
 
-      {!isComplete ? <EndTripSection trip={trip} onEnded={setTrip} /> : null}
+      <EndTripSection trip={trip} onEnded={setTrip} />
     </ScrollView>
   );
 }
 
 function EndTripSection({ trip, onEnded }: { trip: Trip; onEnded: (trip: Trip) => void }) {
   const { colors, typography } = useTheme();
+  const isComplete = isTripComplete(trip);
   const [isOpen, setIsOpen] = useState(false);
-  const [timeIn, setTimeIn] = useState<Date | null>(null);
-  const [closingOdometer, setClosingOdometer] = useState("");
+  const [timeIn, setTimeIn] = useState<Date | null>(trip.time_in ? parseTimeToDate(trip.time_in) : null);
+  const [closingOdometer, setClosingOdometer] = useState(
+    trip.closing_odometer != null ? String(trip.closing_odometer) : ""
+  );
   const [passengers, setPassengers] = useState(trip.passengers ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleEndTrip = async () => {
+  const handleOpen = () => {
+    setTimeIn(trip.time_in ? parseTimeToDate(trip.time_in) : null);
+    setClosingOdometer(trip.closing_odometer != null ? String(trip.closing_odometer) : "");
+    setPassengers(trip.passengers ?? "");
+    setError(null);
+    setIsOpen(true);
+  };
+
+  const handleSubmit = async () => {
     setError(null);
     const closingValue = Number(closingOdometer);
     if (!closingOdometer || !Number.isFinite(closingValue)) {
@@ -212,8 +223,9 @@ function EndTripSection({ trip, onEnded }: { trip: Trip; onEnded: (trip: Trip) =
         passengers: passengers || null,
       });
       onEnded(updated);
+      setIsOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to end trip.");
+      setError(err instanceof Error ? err.message : "Failed to save.");
     } finally {
       setSaving(false);
     }
@@ -221,14 +233,16 @@ function EndTripSection({ trip, onEnded }: { trip: Trip; onEnded: (trip: Trip) =
 
   if (!isOpen) {
     return (
-      <Card style={[styles.section, { backgroundColor: "#D9A44115" }]}>
+      <Card style={[styles.section, !isComplete && { backgroundColor: "#D9A44115" }]}>
         <Text style={[typography.body, { color: colors.textPrimary, fontWeight: "600" }]}>
-          This trip is still in progress
+          {isComplete ? "Trip End Details" : "This trip is still in progress"}
         </Text>
         <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4, marginBottom: 12 }]}>
-          Fill in the time in and closing odometer to complete it.
+          {isComplete
+            ? "Need to fix the time in, closing odometer, or passengers?"
+            : "Fill in the time in and closing odometer to complete it."}
         </Text>
-        <Button label="End Trip" onPress={() => setIsOpen(true)} />
+        <Button label={isComplete ? "Edit" : "End Trip"} onPress={handleOpen} />
       </Card>
     );
   }
@@ -236,7 +250,7 @@ function EndTripSection({ trip, onEnded }: { trip: Trip; onEnded: (trip: Trip) =
   return (
     <Card style={styles.section}>
       <Text style={[typography.body, { color: colors.textPrimary, fontWeight: "600", marginBottom: 12 }]}>
-        End Trip
+        {isComplete ? "Edit Trip End Details" : "End Trip"}
       </Text>
       <DateTimeField label="Time In" mode="time" value={timeIn} onChange={setTimeIn} />
       <TextField
@@ -255,7 +269,10 @@ function EndTripSection({ trip, onEnded }: { trip: Trip; onEnded: (trip: Trip) =
       {error ? (
         <Text style={[typography.caption, { color: colors.alert, marginBottom: 12 }]}>{error}</Text>
       ) : null}
-      <Button label="Complete Trip" onPress={handleEndTrip} loading={saving} />
+      <Button label={isComplete ? "Save Changes" : "Complete Trip"} onPress={handleSubmit} loading={saving} />
+      <Pressable onPress={() => setIsOpen(false)} style={styles.cancelLink}>
+        <Text style={[typography.body, { color: colors.textSecondary }]}>Cancel</Text>
+      </Pressable>
     </Card>
   );
 }
@@ -312,6 +329,10 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: "row",
     gap: 16,
+  },
+  cancelLink: {
+    alignItems: "center",
+    marginTop: 12,
   },
   titleRow: {
     flexDirection: "row",
